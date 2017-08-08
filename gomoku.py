@@ -5,9 +5,9 @@ class Game(object):
 	def __init__(self):
 		self.board = np.zeros([15,15]).astype(int)
 		self.nextTrun = 'B' # Black on board denote by 1, Write by -1
-		self.winner = None
 		self.record = [] # [[x0,y0,c0],[x1,y1,c1],...[xn,yn,cn]]
 		self.state = np.zeros([9, 15, 15]).astype(int)
+		self.winner = None
 		# 0: thisTrunColor (mySide)
 		# 1: nextTrunColor (opponent)
 		# 2: empty
@@ -38,6 +38,7 @@ class Game(object):
 
 	def generateState(self, color):
 		# color denotes which is 'myside'
+		assert self.nextTrun != color
 		if color == 'B':
 			self.state[0] = np.array(self.board == 1).astype(int)
 			self.state[1] = np.array(self.board == -1).astype(int)
@@ -113,6 +114,28 @@ class Game(object):
 			return True
 		else:
 			return False
+
+	def putStone(self, x, y, color):
+		# Check board is full or not, it should also be checked outside function.
+		# I check it here just in case
+
+		if color == 'B':
+			self.board[x,y] = 1
+			self.nextTrun = 'W'
+		else:
+			self.board[x,y] = -1
+			self.nextTrun = 'B'
+		self.record.append([x,y,color])
+		self.generateState(color)
+		if self.isWinner(color):
+			self.winner = color
+			return color
+		else:
+			if not self.board.all(): # board is not full
+				return None
+			else:
+				self.winner = 'Draw'
+				return 'Draw' # board is full and no winner
 
 	def _seq2VerProcess(self, oneSideOnlyBoard):
 		kernel = [[1],[1]]
@@ -207,7 +230,14 @@ class Game(object):
 game = Game()
 
 if __name__ == '__main__':
-	game.board = np.random.randint(-1,2,[15,15])
-	game.generateState('B')
-	print game.board
-	print game.isWinner('B')
+	while game.winner == None:
+		game.printBoard()
+		x,y = input('Step: ' + str(len(game.record)) + ': ')
+		color = game.nextTrun
+		game.putStone(x, y, color)
+	print 'Winner: ' + game.winner
+
+	# game.board = np.random.randint(-1,2,[15,15])
+	# game.generateState('B')
+	# print game.board
+	# print game.isWinner('B')
