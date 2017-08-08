@@ -89,6 +89,30 @@ class Game(object):
 			self.state[8] = atLeast4SeqBlack
 		self.state[2] = np.array(self.board == 0).astype(int)
 
+	def isWinner(self, color):
+		if color == 'B':
+			oneSideOnlyBoard = np.array(self.board == 1).astype(int)
+		else:
+			oneSideOnlyBoard = np.array(self.board == -1).astype(int)
+
+		kernel = [[1,1,1,1,1]]
+		con = (signal.convolve2d(oneSideOnlyBoard, kernel, boundary='fill', mode='same') == 5).astype(int)
+		if con.any() == True:
+			return True
+		kernel = [[1],[1],[1],[1],[1]]
+		con = (signal.convolve2d(oneSideOnlyBoard, kernel, boundary='fill', mode='same') == 5).astype(int)
+		if con.any() == True:
+			return True
+		kernel = [[1,0,0,0,0],[0,1,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,0,0,1]]
+		con = (signal.convolve2d(oneSideOnlyBoard, kernel, boundary='fill', mode='same') == 5).astype(int)
+		if con.any() == True:
+			return True
+		kernel = [[0,0,0,0,1],[0,0,0,1,0],[0,0,1,0,0],[0,1,0,0,0],[1,0,0,0,0]]
+		con = (signal.convolve2d(oneSideOnlyBoard, kernel, boundary='fill', mode='same') == 5).astype(int)
+		if con.any() == True:
+			return True
+		else:
+			return False
 
 	def _seq2VerProcess(self, oneSideOnlyBoard):
 		kernel = [[1],[1]]
@@ -186,5 +210,4 @@ if __name__ == '__main__':
 	game.board = np.random.randint(-1,2,[15,15])
 	game.generateState('B')
 	print game.board
-	for s in game.state:
-		print s
+	print game.isWinner('B')
